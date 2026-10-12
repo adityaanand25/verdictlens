@@ -1,0 +1,18 @@
+.env
+.venv/
+__pycache__/
+ai_models/verdictlens_led_model/*
+!ai_models/verdictlens_led_model/.gitkeep
+*.safetensors
+pytorch_model*.bin
+*.pt
+*.pth
+
+
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# 🔴 CRITICAL: Do not upload 700MB model weights to GitHub!
+ai_models/

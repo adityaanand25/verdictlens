@@ -1,0 +1,27 @@
+# Install PyTorch separately (see STEP_01.md), then:
+transformers
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+datasets
+accelerate
+sentence-transformers
+kagglehub
+pandas
+pyarrow
+pyyaml
+pysbd
+spacy
+networkx
+nltk
+pypdf
+summa
+rouge-score
+bert-score
+langgraph
+ollama
+pytest
+tqdm
+scikit-learn
+scipy
