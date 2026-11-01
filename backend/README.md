@@ -5,7 +5,7 @@ generation pipeline. It does not download model files when serving requests.
 
 ## Model files
 
-The model path defaults to `backend/ai_models/verdictlens_led_model` and is
+The model path defaults to `backend/ai_models/VerdictLens_Final_Model` and is
 configured in `backend/.env`. The folder must contain `config.json`, model
 weights, and tokenizer files. After training, run the model export cell in
 `sumamodel.ipynb` and download `verdictlens_led_model.zip`. From the repository
@@ -13,7 +13,7 @@ root, extract it with:
 
 ```powershell
 Expand-Archive "$HOME\Downloads\verdictlens_led_model.zip" `
-  -DestinationPath ".\backend\ai_models\verdictlens_led_model" -Force
+  -DestinationPath ".\backend\ai_models\VerdictLens_Final_Model" -Force
 ```
 
 Override the model location by editing `VERDICTLENS_MODEL_PATH` in
