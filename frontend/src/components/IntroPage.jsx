@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  BookMarked,
   BookOpenText,
   CheckCircle2,
   Cpu,
@@ -231,16 +232,16 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
           {/* Feature 1 */}
           <div className="glass-card group rounded-3xl p-6 relative overflow-hidden transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500/20 text-brand-300 border border-brand-500/30 mb-5 group-hover:scale-110 transition-transform">
               <BookOpenText size={24} />
             </div>
-            <h3 className="text-lg font-bold text-white group-hover:text-brand-300 transition-colors">
+            <h3 className="text-base font-bold text-white group-hover:text-brand-300 transition-colors">
               Rhetorical Role Extraction
             </h3>
-            <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
               Segment judgments into natural legal pillars: Facts, Issues Framed, Court Rationale (Ratio Decidendi),
               and Final Disposition.
             </p>
@@ -251,38 +252,51 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 mb-5 group-hover:scale-110 transition-transform">
               <Landmark size={24} />
             </div>
-            <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
+            <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors">
               Precedent Treatment Radar
             </h3>
-            <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
               Accurately categorizes how past landmark citations were treated by the bench—identifying whether they were
               Followed, Overruled, or Distinguished.
             </p>
           </div>
 
-          {/* Feature 3 */}
+          {/* Feature 3: Special Legal Symbols & Maxims */}
           <div className="glass-card group rounded-3xl p-6 relative overflow-hidden transition-all">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-5 group-hover:scale-110 transition-transform">
-              <ShieldCheck size={24} />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-5 group-hover:scale-110 transition-transform">
+              <BookMarked size={24} />
             </div>
-            <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
-              Zero-Hallucination Audit
+            <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
+              Legal Symbols &amp; Maxims
             </h3>
-            <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
-              Every extracted section, article, and legal citation is verified against the source text with closed-loop
-              cross-entity validation.
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+              Deciphers special legal symbols (§, ¶, №, Supra, Inter alia, In re, Ratio decidendi) with clear definitions, frequency, and usage snippets.
             </p>
           </div>
 
           {/* Feature 4 */}
           <div className="glass-card group rounded-3xl p-6 relative overflow-hidden transition-all">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-5 group-hover:scale-110 transition-transform">
+              <ShieldCheck size={24} />
+            </div>
+            <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
+              Zero-Hallucination Audit
+            </h3>
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+              Every extracted section, article, and legal citation is verified against the source text with closed-loop
+              cross-entity validation.
+            </p>
+          </div>
+
+          {/* Feature 5 */}
+          <div className="glass-card group rounded-3xl p-6 relative overflow-hidden transition-all">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/20 text-purple-300 border border-purple-500/30 mb-5 group-hover:scale-110 transition-transform">
               <Volume2 size={24} />
             </div>
-            <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+            <h3 className="text-base font-bold text-white group-hover:text-purple-300 transition-colors">
               Speech Readout &amp; Export
             </h3>
-            <p className="mt-2.5 text-xs text-slate-300 leading-relaxed">
+            <p className="mt-2 text-xs text-slate-300 leading-relaxed">
               Listen to the operative decree on the go with built-in voice narration, or export clean Markdown briefs
               ready for case filings.
             </p>

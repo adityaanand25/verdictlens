@@ -52,6 +52,72 @@ export const SAMPLE_CASES = [
             case_name: "Naz Foundation v. Government of NCT of Delhi (2009)",
             treatment: "Referenced"
           }
+        ],
+        legal_symbols: [
+          {
+            symbol: "§",
+            name: "Section Symbol (Silcrow)",
+            category: "Statutory Reference",
+            meaning: "Designates an individual section of a statutory enactment, penal code, or constitutional act (e.g., § 138 NI Act, § 302 IPC).",
+            occurrences: 42,
+            context_snippet: "…provisions under § 3 and § 7 of the Aadhaar (Targeted Delivery of Financial Subsidies) Act, 2016…"
+          },
+          {
+            symbol: "¶",
+            name: "Pilcrow (Paragraph Sign)",
+            category: "Judicial Text Structuring",
+            meaning: "Direct citation pointing to a specific numbered paragraph within a court judgment, affidavit, or contract.",
+            occurrences: 118,
+            context_snippet: "…as observed by Chandrachud, J. at ¶ 142 of the constitutional opinion on dignity and autonomy…"
+          },
+          {
+            symbol: "№",
+            name: "Numero Sign (Docket Notation)",
+            category: "Registry & Case Indexing",
+            meaning: "Official registry symbol indicating petition, writ, or appeal filing numbers.",
+            occurrences: 9,
+            context_snippet: "…Writ Petition (Civil) № 494 of 2012 along with connected writ petitions…"
+          },
+          {
+            symbol: "v.",
+            name: "Versus (Adversarial Division)",
+            category: "Litigant Division",
+            meaning: "Distinguishes the moving party (petitioner/appellant) from the defending party (respondent).",
+            occurrences: 84,
+            context_snippet: "…in Justice K.S. Puttaswamy (Retd.) v. Union of India and Others…"
+          },
+          {
+            symbol: "Supra",
+            name: "Supra ('Above')",
+            category: "Judicial Cross-Reference",
+            meaning: "Indicates that the cited case, statute, or treatise was previously cited in full earlier in the judgment text.",
+            occurrences: 31,
+            context_snippet: "…the principles enunciated in M.P. Sharma (supra) and Kharak Singh (supra) were reviewed…"
+          },
+          {
+            symbol: "Inter alia",
+            name: "Inter alia ('Among other things')",
+            category: "Judicial Scrutiny",
+            meaning: "Used when the court highlights specific key grounds, statutory clauses, or facts from a broader list.",
+            occurrences: 14,
+            context_snippet: "…the petitioners contended, inter alia, that informational privacy constitutes an essential facet of personal liberty…"
+          },
+          {
+            symbol: "Ratio decidendi",
+            name: "Ratio decidendi ('Reason for the decision')",
+            category: "Binding Precedent",
+            meaning: "The core rationale and legal principle formulated by the court that forms binding law under Article 141.",
+            occurrences: 7,
+            context_snippet: "…the unanimous ratio decidendi affirms privacy as a constitutional guarantee under Part III…"
+          },
+          {
+            symbol: "Ultra vires",
+            name: "Ultra vires ('Beyond legal power')",
+            category: "Constitutional Doctrine",
+            meaning: "An act, regulation, or administrative action executed beyond constitutional or statutory authority, rendering it void.",
+            occurrences: 5,
+            context_snippet: "…whether mandatory biometric data collection is ultra vires the fundamental rights guaranteed under Article 21…"
+          }
         ]
       },
       summary: `📌 FACTS OF THE CASE:
@@ -147,6 +213,64 @@ The reference was answered unanimously affirming that the right to privacy is a 
             case_name: "Sajjan Singh v. State of Rajasthan (1965 AIR 845)",
             treatment: "Referenced"
           }
+        ],
+        legal_symbols: [
+          {
+            symbol: "§",
+            name: "Section Symbol (Silcrow)",
+            category: "Statutory Reference",
+            meaning: "Designates an individual section of a statutory enactment, penal code, or constitutional act.",
+            occurrences: 56,
+            context_snippet: "…challenge to the constitutional validity of § 2 and § 3 of the 25th Amendment Act…"
+          },
+          {
+            symbol: "№",
+            name: "Numero Sign (Docket Notation)",
+            category: "Registry & Case Indexing",
+            meaning: "Official registry symbol indicating petition, writ, or appeal filing numbers.",
+            occurrences: 12,
+            context_snippet: "…Writ Petition № 135 of 1970 filed under Article 32 of the Constitution of India…"
+          },
+          {
+            symbol: "v.",
+            name: "Versus (Adversarial Division)",
+            category: "Litigant Division",
+            meaning: "Distinguishes the moving party from the defending party.",
+            occurrences: 95,
+            context_snippet: "…His Holiness Kesavananda Bharati Sripadagalvaru v. State of Kerala and Another…"
+          },
+          {
+            symbol: "Ratio decidendi",
+            name: "Ratio decidendi ('Reason for the decision')",
+            category: "Binding Precedent",
+            meaning: "The core rationale and legal principle formulated by the court that forms binding law under Article 141.",
+            occurrences: 11,
+            context_snippet: "…the ratio decidendi establishes that Article 368 does not enable Parliament to alter the basic structure…"
+          },
+          {
+            symbol: "Ultra vires",
+            name: "Ultra vires ('Beyond legal power')",
+            category: "Constitutional Doctrine",
+            meaning: "An act, regulation, or administrative action executed beyond constitutional or statutory authority, rendering it void.",
+            occurrences: 8,
+            context_snippet: "…the unamendable basic features render any abrogating constitutional amendment ultra vires…"
+          },
+          {
+            symbol: "Coram",
+            name: "Coram ('In the presence of')",
+            category: "Bench Constitution",
+            meaning: "Indicates the formal judicial composition and bench of judges presiding over the hearing of the case.",
+            occurrences: 4,
+            context_snippet: "…coram S.M. Sikri, C.J., J.M. Shelat, K.S. Hegde, A.N. Grover, and companion Judges…"
+          },
+          {
+            symbol: "Per incuriam",
+            name: "Per incuriam ('Through lack of care')",
+            category: "Precedent Doctrine",
+            meaning: "A judicial decision rendered in ignorance of binding statutes or superior precedents, robbing it of binding force.",
+            occurrences: 3,
+            context_snippet: "…it was urged that the restrictive dicta in Golak Nath was delivered per incuriam…"
+          }
         ]
       },
       summary: `📌 FACTS OF THE CASE:
@@ -236,6 +360,56 @@ The 24th Amendment was upheld in its entirety. The first part of Section 3 of th
           {
             case_name: "Chintaman Rao v. State of Madhya Pradesh (1950 SCR 759)",
             treatment: "Followed / Upheld"
+          }
+        ],
+        legal_symbols: [
+          {
+            symbol: "§",
+            name: "Section Symbol (Silcrow)",
+            category: "Statutory Reference",
+            meaning: "Designates an individual section of a statutory enactment, penal code, or constitutional act.",
+            occurrences: 68,
+            context_snippet: "…challenge seeking to declare § 66A of the Information Technology Act, 2000 unconstitutional…"
+          },
+          {
+            symbol: "№",
+            name: "Numero Sign (Docket Notation)",
+            category: "Registry & Case Indexing",
+            meaning: "Official registry symbol indicating petition, writ, or appeal filing numbers.",
+            occurrences: 7,
+            context_snippet: "…Writ Petition (Criminal) № 167 of 2012 heard along with connected petitions…"
+          },
+          {
+            symbol: "v.",
+            name: "Versus (Adversarial Division)",
+            category: "Litigant Division",
+            meaning: "Distinguishes the moving party from the defending party.",
+            occurrences: 46,
+            context_snippet: "…in Shreya Singhal v. Union of India and Others (2015) 5 SCC 1…"
+          },
+          {
+            symbol: "Ultra vires",
+            name: "Ultra vires ('Beyond legal power')",
+            category: "Constitutional Doctrine",
+            meaning: "An act, regulation, or administrative action executed beyond constitutional or statutory authority, rendering it void.",
+            occurrences: 9,
+            context_snippet: "…Section 66A of the IT Act was struck down as being ultra vires Article 19(1)(a) of the Constitution…"
+          },
+          {
+            symbol: "Prima facie",
+            name: "Prima facie ('At first sight')",
+            category: "Evidentiary Standard",
+            meaning: "Evidence that is sufficient on its face to prove a legal proposition or charge unless subsequently disproved.",
+            occurrences: 4,
+            context_snippet: "…citizens were arrested without establishing a prima facie case of public disorder or incitement…"
+          },
+          {
+            symbol: "Inter alia",
+            name: "Inter alia ('Among other things')",
+            category: "Judicial Scrutiny",
+            meaning: "Used when the court highlights specific key grounds, statutory clauses, or facts from a broader list.",
+            occurrences: 5,
+            context_snippet: "…the petitioners submitted, inter alia, that the terms 'grossly offensive' and 'menacing' are vague…"
           }
         ]
       },

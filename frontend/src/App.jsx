@@ -6,6 +6,7 @@ import {
   ArrowDownRight,
   ArrowLeft,
   ArrowUpRight,
+  BookMarked,
   BookOpenText,
   CalendarDays,
   Check,
@@ -26,6 +27,7 @@ import {
   LockKeyhole,
   Play,
   Printer,
+  Quote,
   RefreshCw,
   RotateCcw,
   Scale,
@@ -47,9 +49,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000
 
 const PIPELINE_STAGES = [
   { id: 1, title: "Parsing Judicial Document", detail: "Extracting pages, bench headers & legal text" },
-  { id: 2, title: "Extracting Legal NLU Entities", detail: "Isolating Acts, Sections, Precedents & Parties" },
+  { id: 2, title: "AI Legal Semantic NLU", detail: "Domain clustering, near-synonym mapping & entity alignment" },
   { id: 3, title: "Synthesizing Case Brief", detail: "Generating Facts, Ratio Decidendi & Final Order" },
-  { id: 4, title: "Closed-Loop Integrity Audit", detail: "Verifying statute preservation & hallucination checks" },
+  { id: 4, title: "Closed-Loop Integrity Audit", detail: "Semantic statute preservation & hallucination checks" },
 ];
 
 const SECTION_CONFIG = [
@@ -387,6 +389,17 @@ export default function App() {
       md += `\n`;
     }
 
+    if (legalSymbols?.length) {
+      md += `## Special Legal Symbols & Judicial Maxims\n`;
+      legalSymbols.forEach((s) => {
+        md += `- **${s.name} (${s.symbol})** [${s.category}] — ${s.meaning} *(Occurrences: ${s.occurrences || 1})*\n`;
+        if (s.context_snippet) {
+          md += `  > Excerpt: "${s.context_snippet}"\n`;
+        }
+      });
+      md += `\n`;
+    }
+
     md += `## Verification Audit\n`;
     md += `- Status: ${audit.status || (audit.passed ? "Passed" : "Checked")}\n`;
     md += `- Coverage: ${audit.coverage ? Math.round(audit.coverage * 100) + "%" : "100%"}\n`;
@@ -412,6 +425,10 @@ export default function App() {
   const wordCounts = result?.word_counts || {};
   const compressionRatio = calculateCompression(wordCounts.original_count, wordCounts.summary_count);
 
+  const legalSymbols = useMemo(() => {
+    return result?.legal_symbols || metadata?.legal_symbols || [];
+  }, [result?.legal_symbols, metadata?.legal_symbols]);
+
   const filteredActs = useMemo(() => {
     const items = metadata.acts_sections || [];
     if (!searchQuery.trim()) return items;
@@ -427,6 +444,23 @@ export default function App() {
       return name.toLowerCase().includes(searchQuery.toLowerCase()) || treatment.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [metadata.case_precedents, searchQuery]);
+
+  const filteredSymbols = useMemo(() => {
+    if (!searchQuery.trim()) return legalSymbols;
+    const q = searchQuery.toLowerCase();
+    return legalSymbols.filter((item) => {
+      const symbol = item.symbol || "";
+      const name = item.name || "";
+      const category = item.category || "";
+      const meaning = item.meaning || "";
+      return (
+        symbol.toLowerCase().includes(q) ||
+        name.toLowerCase().includes(q) ||
+        category.toLowerCase().includes(q) ||
+        meaning.toLowerCase().includes(q)
+      );
+    });
+  }, [legalSymbols, searchQuery]);
 
   return (
     <div className="relative min-h-screen text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
@@ -1033,17 +1067,37 @@ export default function App() {
                       <UsersRound size={15} />
                       <span>Parties &amp; Dates</span>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("symbols")}
+                      className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+                        activeTab === "symbols"
+                          ? "border border-amber-400/40 bg-amber-500/20 text-amber-200 shadow-glow-amber"
+                          : "border border-transparent text-slate-400 hover:bg-white/[0.05] hover:text-slate-200"
+                      }`}
+                    >
+                      <BookMarked size={15} />
+                      <span>Legal Symbols &amp; Maxims</span>
+                      <span className="rounded-full bg-amber-500/20 text-amber-300 px-1.5 py-0.5 text-[10px] font-mono">
+                        {legalSymbols.length}
+                      </span>
+                    </button>
                   </div>
 
                   {/* Instant Search Bar */}
-                  {(activeTab === "statutes" || activeTab === "precedents") && (
+                  {(activeTab === "statutes" || activeTab === "precedents" || activeTab === "symbols") && (
                     <div className="relative">
                       <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search sections or cases…"
+                        placeholder={
+                          activeTab === "symbols"
+                            ? "Search symbols (§, ¶, №) or Latin maxims…"
+                            : "Search sections or cases…"
+                        }
                         className="w-56 rounded-xl border border-white/[0.1] bg-white/[0.04] py-1.5 pl-9 pr-3 text-xs text-white placeholder-slate-500 backdrop-blur-md focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 sm:w-64"
                       />
                       {searchQuery && (
@@ -1488,6 +1542,109 @@ export default function App() {
                         )}
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* TAB CONTENT 6: LEGAL SYMBOLS & JUDICIAL MAXIMS */}
+                {activeTab === "symbols" && (
+                  <div className="glass-panel-elevated rounded-3xl p-6 sm:p-8">
+                    <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-white/[0.08]">
+                      <div>
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2.5">
+                          <BookMarked size={20} className="text-amber-400" />
+                          <span>Special Legal Symbols, Glyphs &amp; Judicial Maxims</span>
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Automated analysis of special symbols (§, ¶, №), citation abbreviations, and procedural Latin terms with legal definitions and contextual excerpts.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3.5 py-1 text-xs font-mono font-bold text-amber-300">
+                          {filteredSymbols.length} {filteredSymbols.length === 1 ? "Symbol Identified" : "Symbols Identified"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {filteredSymbols.length > 0 ? (
+                      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        {filteredSymbols.map((item, index) => (
+                          <div
+                            key={`${item.symbol}-${index}`}
+                            className="glass-card group flex flex-col justify-between rounded-2xl p-5 transition-all hover:border-amber-400/40"
+                          >
+                            <div>
+                              {/* Header with symbol glyph, name, category, and occurrences */}
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3">
+                                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30 text-amber-300 font-mono text-base font-extrabold shadow-sm">
+                                    {item.symbol}
+                                  </div>
+                                  <div>
+                                    <h4 className="text-base font-bold text-white group-hover:text-amber-200 transition-colors">
+                                      {item.name}
+                                    </h4>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                                      <span className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                                        {item.category}
+                                      </span>
+                                      {item.occurrences > 0 && (
+                                        <span className="text-[11px] font-mono text-amber-400 font-medium">
+                                          Found {item.occurrences} {item.occurrences === 1 ? "time" : "times"} in text
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(`${item.name} (${item.symbol}): ${item.meaning}`, item.name)}
+                                  className="rounded-lg p-1.5 text-slate-400 hover:bg-white/[0.08] hover:text-white transition"
+                                  title="Copy definition"
+                                >
+                                  <Clipboard size={14} />
+                                </button>
+                              </div>
+
+                              {/* Legal Meaning & Explanation */}
+                              <div className="mt-4 rounded-xl bg-white/[0.02] border border-white/[0.05] p-3.5">
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                                  Legal Meaning &amp; Purpose:
+                                </div>
+                                <p className="text-xs text-slate-200 leading-relaxed font-sans">
+                                  {item.meaning}
+                                </p>
+                              </div>
+
+                              {/* Contextual snippet from transcript */}
+                              {item.context_snippet && (
+                                <div className="mt-3 rounded-xl border border-amber-500/15 bg-amber-500/[0.03] p-3">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-amber-300/80 mb-1 flex items-center gap-1.5">
+                                    <Quote size={11} />
+                                    <span>Usage in this Judgment:</span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-300 italic font-mono leading-relaxed break-words">
+                                    {item.context_snippet}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-14 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.04] text-slate-400 mb-3">
+                          <BookMarked size={22} />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-300">
+                          {searchQuery ? `No legal symbols matched "${searchQuery}"` : "No special legal symbols detected in this document."}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                          Common statutory symbols (§, ¶, №) and Latin maxims will be automatically identified and explained when present.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
