@@ -362,21 +362,23 @@ def segment_rhetorical_zones(text: str) -> dict:
 def clean_generated_summary(text: str) -> str:
     """
     Post-Processor: Strips prompt leakage markers, raw tab characters,
-    and formats final spacing for legal summaries.
+    and formats final spacing for legal summaries without collapsing newlines.
     """
     # 1. Strip raw tab characters
     text = text.replace("\t", " ")
     
     # 2. Strip internal prompt leakages/zone tags
-    text = re.sub(r"\[ZONE:\s*[^\]]+\]", "", text)
+    text = re.sub(r"\[ZONE:\s*[^\]]+\]", "", text, flags=re.IGNORECASE)
     
-    # 3. Clean up double/excess spaces resulting from string cleaning
-    text = re.sub(r"\s+", " ", text)
+    # 3. Clean up horizontal whitespace without collapsing paragraph newlines
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r" ?\n ?", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     
-    # 4. Correct paragraph newlines so our structured headers stay on their own lines
-    text = text.replace("📌 FACTS OF THE CASE:", "\n📌 FACTS OF THE CASE:\n")
-    text = text.replace("🧠 COURT RATIONALE (RATIO DECIDENDI):", "\n\n🧠 COURT RATIONALE (RATIO DECIDENDI):\n")
-    text = text.replace("⚖️ FINAL ORDER & HELD:", "\n\n⚖️ FINAL ORDER & HELD:\n")
+    # 4. Standardize structured section headers so frontend parses them reliably
+    text = re.sub(r"(?:^|\n)\s*(?:[📌\?\*#\-]*\s*)?(?:FACTS(?:\s+OF\s+THE\s+CASE)?|BACKGROUND)\s*:?\s*", "\n\n📌 FACTS OF THE CASE:\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?:^|\n)\s*(?:[🧠\?\*#\-]*\s*)?(?:COURT\s+RATIONALE(?:\s*\([^)]*\))?|RATIO(?:\s+DECIDENDI)?)\s*:?\s*", "\n\n🧠 COURT RATIONALE (RATIO DECIDENDI):\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?:^|\n)\s*(?:[⚖️\?\*#\-]*\s*)?(?:FINAL\s+ORDER(?:\s*(?:&|AND)\s*HELD)?|HELD)\s*:?\s*", "\n\n⚖️ FINAL ORDER & HELD:\n", text, flags=re.IGNORECASE)
     
     return text.strip()
 
@@ -384,7 +386,7 @@ def clean_generated_summary(text: str) -> str:
 def generate_summary_pipeline(pdf_bytes: bytes) -> dict:
     """
     Advanced VerdictLens Pipeline: Implements Rhetorical Role Segmentation 
-    and Semantic Precedent Treatment Classification [1].
+    and Semantic Precedent Treatment Classification with full, non-truncated output.
     """
     # 1. Parse PDF
     raw_text = extract_text_from_pdf(pdf_bytes)
@@ -399,78 +401,68 @@ def generate_summary_pipeline(pdf_bytes: bytes) -> dict:
     # 2. Execute Advanced NLU Metadata Extraction (With Citation Treatments!)
     entities = extract_nlu_legal_entities(raw_text)
     
-    # 3. Partition Document into Rhetorical Zones [1]
+    # 3. Partition Document into Rhetorical Zones
     zones = segment_rhetorical_zones(raw_text)
     
-    # 4. Generate Summaries for Each Zone using your fine-tuned model
-    print("🧠 Summarizing structured legal zones...")
+    # 4. Generate Summaries for Each Zone using fine-tuned model
+    print("🧠 Summarizing structured legal zones without truncation...")
     summarized_zones = {}
     
-    # Build target formatting inputs for each zone
+    # Provide generous input context to each zone so no source context is prematurely sliced
     zone_prompts = {
-        "facts": f"[ZONE: FACTS AND BACKGROUND]\n{summarizer.summarize(zones['facts'], ratio=0.25) or zones['facts'][:4000]}",
-        "rationale": f"[ZONE: COURT RATIONALE & RATIO]\n{summarizer.summarize(zones['rationale'], ratio=0.25) or zones['rationale'][:4000]}",
-        "held": f"[ZONE: FINAL RULING AND ORDER]\n{zones['held'][:2000]}"
+        "facts": f"[ZONE: FACTS AND BACKGROUND]\n{summarizer.summarize(zones['facts'], ratio=0.35) or zones['facts'][:12000]}",
+        "rationale": f"[ZONE: COURT RATIONALE & RATIO]\n{summarizer.summarize(zones['rationale'], ratio=0.35) or zones['rationale'][:12000]}",
+        "held": f"[ZONE: FINAL RULING AND ORDER]\n{summarizer.summarize(zones['held'], ratio=0.5) or zones['held'][:8000]}"
     }
     
-        # Locate this generation loop inside your generate_summary_pipeline function:
+    # Per-zone generation configurations: generous token ceilings so thoughts finish naturally
+    zone_generation_params = {
+        "facts": {"min_length": 80, "max_new_tokens": 450},
+        "rationale": {"min_length": 100, "max_new_tokens": 550},
+        "held": {"min_length": 60, "max_new_tokens": 350},
+    }
+    
     for zone_name, prompt_text in zone_prompts.items():
         inputs = tokenizer(prompt_text, max_length=4096, truncation=True, return_tensors="pt").to(device)
+        params = zone_generation_params.get(zone_name, {"min_length": 60, "max_new_tokens": 400})
+        
         with torch.no_grad():
             summary_ids = model.generate(
                 inputs.input_ids,
                 attention_mask=inputs.attention_mask,
-                num_beams=4,              # Focus on beam search for legal precision
-                min_length=60,            # Force descriptive summaries per zone
-                max_length=150,           # Keep individual zones concise
-                
-                # 🔴 CRITICAL ANTI-REPETITION PENALTIES ADDED HERE:
-                repetition_penalty=1.2,   # Strongly penalizes model for repeating words/phrases [1]
-                no_repeat_ngram_size=3,   # Ensures no 3-word sequence can repeat [1]
-                
+                num_beams=4,                       # High-precision beam search
+                min_length=params["min_length"],   # Minimum substantive depth
+                max_new_tokens=params["max_new_tokens"], # Generous ceiling to prevent truncation
+                repetition_penalty=1.2,            # Avoid repetitive phrasing
+                no_repeat_ngram_size=3,            # Avoid 3-gram repeating loops
                 early_stopping=True
             )
-        summarized_zones[zone_name] = tokenizer.decode(summary_ids[0], skip_special_tokens=True).strip()
+        decoded_text = tokenizer.decode(summary_ids[0], skip_special_tokens=True).strip()
+        # Clean any zone prompt artifacts
+        decoded_text = re.sub(r"\[ZONE:\s*[^\]]+\]", "", decoded_text, flags=re.IGNORECASE).strip()
+        summarized_zones[zone_name] = decoded_text
         
-    # 5. Construct the Final Structured Legal Summary [1]
+    # 5. Construct the Final Structured Legal Summary
     final_structured_summary = (
         f"📌 FACTS OF THE CASE:\n{summarized_zones['facts']}\n\n"
         f"🧠 COURT RATIONALE (RATIO DECIDENDI):\n{summarized_zones['rationale']}\n\n"
         f"⚖️ FINAL ORDER & HELD:\n{summarized_zones['held']}"
     )
     
-    # 🔴 APPLY POST-PROCESSING CLEAN-UP BEFORE RETURNING!
     final_structured_summary = clean_generated_summary(final_structured_summary)
     
-    # 6. Closed-loop verification check [1]
-    summary_entities = extract_nlu_legal_entities(final_structured_summary)
-    audit_report = verify_factual_integrity(entities, summary_entities)
-    
-    return {
-        "metadata": entities,
-        "summary": final_structured_summary, # Contains clean, non-repetitive summaries
-        "verification_audit": audit_report,
-        "word_counts": {
-            "original_count": len(raw_text.split()),
-            "summary_count": len(final_structured_summary.split())
-        }
-    }
-
-        
-    # 5. Construct the Final Structured Legal Summary [1]
-    final_structured_summary = (
-        f"📌 FACTS OF THE CASE:\n{summarized_zones['facts']}\n\n"
-        f"🧠 COURT RATIONALE (RATIO DECIDENDI):\n{summarized_zones['rationale']}\n\n"
-        f"⚖️ FINAL ORDER & HELD:\n{summarized_zones['held']}"
-    )
-    
-    # 6. Closed-loop verification check [1]
+    # 6. Closed-loop verification check
     summary_entities = extract_nlu_legal_entities(final_structured_summary)
     audit_report = verify_factual_integrity(entities, summary_entities)
     
     return {
         "metadata": entities,
         "summary": final_structured_summary,
+        "sections": {
+            "facts": summarized_zones["facts"],
+            "rationale": summarized_zones["rationale"],
+            "held": summarized_zones["held"]
+        },
         "verification_audit": audit_report,
         "word_counts": {
             "original_count": len(raw_text.split()),

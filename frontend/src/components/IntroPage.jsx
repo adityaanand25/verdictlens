@@ -169,7 +169,7 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
                   <BookOpenText size={15} />
                   <span>FACTS OF THE CASE</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed line-clamp-4">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   Challenged the mandatory Aadhaar biometric enrollment scheme under fundamental rights provisions. 
                   Referred to a 9-judge bench to clarify whether privacy is constitutionally protected.
                 </p>
@@ -180,7 +180,7 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
                   <Sparkles size={15} />
                   <span>COURT RATIONALE</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed line-clamp-4">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   Privacy is an intrinsic element of life and liberty under Article 21. Dignity cannot exist without 
                   informational self-determination and bodily autonomy. Established a 3-fold proportionality test.
                 </p>
@@ -191,7 +191,7 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
                   <Gavel size={15} />
                   <span>FINAL ORDER &amp; HELD</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed line-clamp-4">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   Unanimously affirmed privacy as a Fundamental Right under Part III. M.P. Sharma (1954) and Kharak Singh (1962) 
                   stand expressly overruled to the extent of inconsistency.
                 </p>
@@ -369,7 +369,7 @@ export default function IntroPage({ onExplore, onSelectSampleCase, sampleCases }
                 <h3 className="text-base font-bold text-white group-hover:text-brand-300 transition-colors">
                   {sc.title}
                 </h3>
-                <p className="mt-3 text-xs text-slate-300 leading-relaxed line-clamp-3">
+                <p className="mt-3 text-xs text-slate-300 leading-relaxed">
                   {sc.description}
                 </p>
               </div>

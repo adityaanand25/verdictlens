@@ -60,7 +60,7 @@ const SECTION_CONFIG = [
     icon: BookOpenText,
     accent: "indigo",
     badge: "Factual Matrix",
-    heading: /(?:^|\r?\n)[\t ]*(?:📌[\t ]*)?FACTS(?:[\t ]+OF[\t ]+THE[\t ]+CASE)?[\t ]*:?[ \t]*(?:\r?\n|$)/i,
+    heading: /(?:^|\r?\n)[\t ]*(?:[📌\?\*#\-]*[\t ]*)?(?:FACTS(?:\s+OF\s+THE\s+CASE)?|BACKGROUND)[\t ]*:?[ \t]*(?:\r?\n|$)/i,
   },
   {
     key: "rationale",
@@ -69,7 +69,7 @@ const SECTION_CONFIG = [
     icon: Sparkles,
     accent: "violet",
     badge: "Binding Precedent",
-    heading: /(?:^|\r?\n)[\t ]*(?:🧠[\t ]*)?COURT[\t ]+RATIONALE(?:[\t ]*\([\t ]*RATIO[\t ]+DECIDENDI[\t ]*\))?[\t ]*:?[ \t]*(?:\r?\n|$)/i,
+    heading: /(?:^|\r?\n)[\t ]*(?:[🧠\?\*#\-]*[\t ]*)?(?:COURT[\t ]+RATIONALE(?:\s*\([^)]*\))?|RATIO(?:\s+DECIDENDI)?|LEGAL[\t ]+REASONING)[\t ]*:?[ \t]*(?:\r?\n|$)/i,
   },
   {
     key: "order",
@@ -78,7 +78,7 @@ const SECTION_CONFIG = [
     icon: Gavel,
     accent: "emerald",
     badge: "Judicial Disposition",
-    heading: /(?:^|\r?\n)[\t ]*(?:⚖️?[\t ]*)?FINAL[\t ]+ORDER[\t ]*(?:&|AND)[\t ]*HELD[\t ]*:?[ \t]*(?:\r?\n|$)/i,
+    heading: /(?:^|\r?\n)[\t ]*(?:[⚖️\?\*#\-]*[\t ]*)?(?:FINAL[\t ]+ORDER(?:\s*(?:&|AND)\s*HELD)?|FINAL[\t ]+ORDER|FINAL[\t ]+DECREE|HELD|OPERATIVE[\t ]+ORDER)[\t ]*:?[ \t]*(?:\r?\n|$)/i,
   },
 ];
 
@@ -106,7 +106,25 @@ function getErrorMessage(error) {
   return error?.message || "An unexpected error occurred while analyzing this judgment.";
 }
 
-function parseSummarySections(summary = "") {
+function parseSummarySections(summary = "", apiSections = null) {
+  // 1. If backend directly provided clean pre-split zones, use them directly without regex slicing
+  if (apiSections && typeof apiSections === "object") {
+    const list = [];
+    if (apiSections.facts && typeof apiSections.facts === "string" && apiSections.facts.trim()) {
+      list.push({ ...SECTION_CONFIG[0], content: apiSections.facts.trim() });
+    }
+    if (apiSections.rationale && typeof apiSections.rationale === "string" && apiSections.rationale.trim()) {
+      list.push({ ...SECTION_CONFIG[1], content: apiSections.rationale.trim() });
+    }
+    if (apiSections.held && typeof apiSections.held === "string" && apiSections.held.trim()) {
+      list.push({ ...SECTION_CONFIG[2], content: apiSections.held.trim() });
+    }
+    if (list.length > 0) return list;
+  }
+
+  // 2. Fallback to robust regex parsing
+  if (!summary || typeof summary !== "string") return [];
+
   const matches = SECTION_CONFIG.map((section) => {
     const match = section.heading.exec(summary);
     return match ? { ...section, start: match.index, end: match.index + match[0].length } : null;
@@ -125,10 +143,13 @@ function parseSummarySections(summary = "") {
     ];
   }
 
-  const sections = matches.map((section, index) => ({
-    ...section,
-    content: summary.slice(section.end, matches[index + 1]?.start ?? summary.length).trim(),
-  })).filter((section) => section.content);
+  const sections = matches.map((section, index) => {
+    const nextStart = matches[index + 1]?.start ?? summary.length;
+    return {
+      ...section,
+      content: summary.slice(section.end, nextStart).trim(),
+    };
+  }).filter((section) => section.content);
 
   const preamble = summary.slice(0, matches[0].start).trim();
   if (preamble) {
@@ -161,6 +182,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("brief"); // "brief" | "statutes" | "precedents" | "audit" | "parties"
+  const [briefViewMode, setBriefViewMode] = useState("sections"); // "sections" | "full"
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedSection, setCopiedSection] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
@@ -381,7 +403,10 @@ export default function App() {
   };
 
   const summary = typeof result?.summary === "string" ? result.summary : "";
-  const sections = useMemo(() => parseSummarySections(summary), [summary]);
+  const sections = useMemo(
+    () => parseSummarySections(summary, result?.sections),
+    [summary, result?.sections]
+  );
   const metadata = result?.metadata || {};
   const audit = result?.verification_audit || {};
   const wordCounts = result?.word_counts || {};
@@ -1036,76 +1061,162 @@ export default function App() {
                 {/* TAB CONTENT 1: EXECUTIVE BRIEF */}
                 {activeTab === "brief" && (
                   <div className="space-y-6">
-                    {sections.map((section) => {
-                      const Icon = section.icon || BookOpenText;
-                      const isViolet = section.accent === "violet";
-                      const isEmerald = section.accent === "emerald";
+                    {/* View mode toggle: Sections vs Full Uncut Brief */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3 backdrop-blur-md">
+                      <div className="flex items-center gap-2 text-xs text-slate-300">
+                        <span className="font-semibold text-white">Display Format:</span>
+                        <span className="text-slate-400">
+                          {briefViewMode === "sections" ? "Separated by rhetorical legal roles" : "Uncut continuous judicial brief"}
+                        </span>
+                      </div>
 
-                      return (
-                        <section
-                          key={section.key}
-                          className="glass-card group rounded-2xl p-6 sm:p-8 relative overflow-hidden"
+                      <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.1] bg-obsidian-950/60 p-1">
+                        <button
+                          type="button"
+                          onClick={() => setBriefViewMode("sections")}
+                          className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                            briefViewMode === "sections"
+                              ? "bg-brand-500/20 text-white border border-brand-400/40 shadow-glass-sm"
+                              : "text-slate-400 hover:text-white"
+                          }`}
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
-                                  isEmerald
-                                    ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-                                    : isViolet
-                                      ? "bg-purple-500/20 border-purple-500/30 text-purple-300"
-                                      : "bg-indigo-500/20 border-indigo-500/30 text-indigo-300"
-                                }`}
-                              >
-                                <Icon size={20} />
+                          Structured Sections ({sections.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBriefViewMode("full")}
+                          className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
+                            briefViewMode === "full"
+                              ? "bg-brand-500/20 text-white border border-brand-400/40 shadow-glass-sm"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          Complete Uncut Text
+                        </button>
+                      </div>
+                    </div>
+
+                    {briefViewMode === "full" ? (
+                      /* Full Uncut Document View */
+                      <section className="glass-card group rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 border border-brand-500/30 text-brand-300">
+                              <BookOpenText size={20} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-white">Complete Judicial Brief</h3>
+                                <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-mono text-cyan-300">
+                                  {summary.trim().split(/\s+/).filter(Boolean).length} words
+                                </span>
                               </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h3 className="text-lg font-bold text-white">{section.title}</h3>
-                                  {section.badge && (
-                                    <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-slate-300">
-                                      {section.badge}
+                              <p className="text-xs text-slate-400 mt-0.5">Full uninterrupted synthesis of the judgment</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleAudioSpeech(summary)}
+                              className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
+                              title="Listen to full brief"
+                            >
+                              <Volume2 size={13} />
+                              <span className="hidden sm:inline">Read Full</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(summary, "Full Brief")}
+                              className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
+                            >
+                              {copiedSection === "Full Brief" ? <Check size={13} className="text-emerald-400" /> : <Clipboard size={13} />}
+                              <span>{copiedSection === "Full Brief" ? "Copied" : "Copy All"}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 text-sm leading-8 text-slate-200 whitespace-pre-wrap font-sans [overflow-wrap:anywhere]">
+                          {summary}
+                        </div>
+                      </section>
+                    ) : (
+                      /* Sectioned Cards View */
+                      sections.map((section) => {
+                        const Icon = section.icon || BookOpenText;
+                        const isViolet = section.accent === "violet";
+                        const isEmerald = section.accent === "emerald";
+                        const wordCount = section.content ? section.content.trim().split(/\s+/).filter(Boolean).length : 0;
+
+                        return (
+                          <section
+                            key={section.key}
+                            className="glass-card group rounded-2xl p-6 sm:p-8 relative overflow-hidden"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+                                    isEmerald
+                                      ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
+                                      : isViolet
+                                        ? "bg-purple-500/20 border-purple-500/30 text-purple-300"
+                                        : "bg-indigo-500/20 border-indigo-500/30 text-indigo-300"
+                                  }`}
+                                >
+                                  <Icon size={20} />
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-white">{section.title}</h3>
+                                    {section.badge && (
+                                      <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-slate-300">
+                                        {section.badge}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] font-mono text-slate-500">
+                                      ({wordCount} words)
                                     </span>
+                                  </div>
+                                  {section.subtitle && (
+                                    <p className="text-xs text-slate-400 mt-0.5">{section.subtitle}</p>
                                   )}
                                 </div>
-                                {section.subtitle && (
-                                  <p className="text-xs text-slate-400 mt-0.5">{section.subtitle}</p>
-                                )}
+                              </div>
+
+                              {/* Audio and copy buttons */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAudioSpeech(section.content)}
+                                  className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
+                                  title="Listen to this section"
+                                >
+                                  <Volume2 size={13} />
+                                  <span className="hidden sm:inline">Read</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(section.content, section.title)}
+                                  className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
+                                >
+                                  {copiedSection === section.title ? (
+                                    <Check size={13} className="text-emerald-400" />
+                                  ) : (
+                                    <Clipboard size={13} />
+                                  )}
+                                  <span>{copiedSection === section.title ? "Copied" : "Copy"}</span>
+                                </button>
                               </div>
                             </div>
 
-                            {/* Audio and copy buttons */}
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => toggleAudioSpeech(section.content)}
-                                className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
-                                title="Listen to this section"
-                              >
-                                <Volume2 size={13} />
-                                <span className="hidden sm:inline">Read</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(section.content, section.title)}
-                                className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-brand-400 hover:bg-white/[0.08] hover:text-white transition"
-                              >
-                                {copiedSection === section.title ? (
-                                  <Check size={13} className="text-emerald-400" />
-                                ) : (
-                                  <Clipboard size={13} />
-                                )}
-                                <span>{copiedSection === section.title ? "Copied" : "Copy"}</span>
-                              </button>
+                            <div className="mt-5 text-sm leading-8 text-slate-200 whitespace-pre-wrap font-sans [overflow-wrap:anywhere]">
+                              {section.content}
                             </div>
-                          </div>
-
-                          <div className="mt-5 text-sm leading-8 text-slate-200 whitespace-pre-wrap font-sans [overflow-wrap:anywhere]">
-                            {section.content}
-                          </div>
-                        </section>
-                      );
-                    })}
+                          </section>
+                        );
+                      })
+                    )}
                   </div>
                 )}
 
