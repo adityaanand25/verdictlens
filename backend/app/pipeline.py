@@ -283,6 +283,8 @@ def classify_citation_treatment(text: str, case_name: str) -> str:
 LEGAL_SYMBOLS_REGISTRY = [
     {
         "symbol": "§",
+        "glyph": "§",
+        "kind": "glyph",
         "pattern": r"§\s*\d+|§",
         "name": "Section Symbol (Silcrow)",
         "category": "Statutory Reference",
@@ -290,6 +292,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "§§",
+        "glyph": "§§",
+        "kind": "glyph",
         "pattern": r"§§\s*\d+|§§",
         "name": "Plural Sections Symbol",
         "category": "Statutory Reference",
@@ -297,6 +301,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "¶",
+        "glyph": "¶",
+        "kind": "glyph",
         "pattern": r"¶\s*\d+|¶",
         "name": "Pilcrow (Paragraph Sign)",
         "category": "Judicial Text Structuring",
@@ -304,6 +310,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "№",
+        "glyph": "№",
+        "kind": "glyph",
         "pattern": r"№\s*\d+|№|\bNo\.\s*\d+/\d+|\bNo\.\s*\d+\s+of\s+\d{4}",
         "name": "Numero Sign (Docket Notation)",
         "category": "Registry & Case Indexing",
@@ -311,13 +319,71 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "v.",
+        "glyph": "v.",
+        "kind": "glyph",
         "pattern": r"\b(?:v\.|vs\.|versus)\b",
         "name": "Versus (Adversarial Division)",
         "category": "Litigant Division",
         "meaning": "Distinguishes the moving party (petitioner/appellant/plaintiff) from the defending party (respondent/defendant).",
     },
     {
+        "symbol": "©",
+        "glyph": "©",
+        "kind": "glyph",
+        "pattern": r"©|\(c\)",
+        "name": "Copyright Symbol",
+        "category": "Intellectual Property",
+        "meaning": "Denotes protected legal copyright over proprietary works, literary texts, software, or commercial creative expressions.",
+    },
+    {
+        "symbol": "®",
+        "glyph": "®",
+        "kind": "glyph",
+        "pattern": r"®|\(r\)",
+        "name": "Registered Trademark Symbol",
+        "category": "Intellectual Property",
+        "meaning": "Signifies that a trademark is officially registered with the national Registry of Trademarks under the Trademarks Act.",
+    },
+    {
+        "symbol": "™",
+        "glyph": "™",
+        "kind": "glyph",
+        "pattern": r"™|\bTM\b",
+        "name": "Trademark Symbol",
+        "category": "Intellectual Property",
+        "meaning": "Used to establish unregistered common-law rights in a business name, brand logo, or trade dress prior to registration.",
+    },
+    {
+        "symbol": "†",
+        "glyph": "†",
+        "kind": "glyph",
+        "pattern": r"[†‡]",
+        "name": "Judicial Dagger / Footnote Marker",
+        "category": "Citation Annotation",
+        "meaning": "Used in official law reports to flag explanatory footnotes, concurring notes, or dissenting observations.",
+    },
+    {
+        "symbol": "Δ",
+        "glyph": "Δ",
+        "kind": "glyph",
+        "pattern": r"\b(?:Δ|Delta)\b",
+        "name": "Delta (Defendant Notation)",
+        "category": "Judicial Shorthand",
+        "meaning": "Traditional legal shorthand used by judges, arbitrators, and legal clerks to denote the Defendant or Respondent.",
+    },
+    {
+        "symbol": "π",
+        "glyph": "π",
+        "kind": "glyph",
+        "pattern": r"\b(?:π|Pi)\b",
+        "name": "Pi (Plaintiff Notation)",
+        "category": "Judicial Shorthand",
+        "meaning": "Traditional legal shorthand used in legal manuscripts and cause briefs to represent the Plaintiff or Petitioner.",
+    },
+    {
         "symbol": "Id. / Ibid.",
+        "glyph": "IBID",
+        "kind": "maxim",
         "pattern": r"\b(?:Id\.|Ibid\.)\b",
         "name": "Ibidem ('In the same place')",
         "category": "Citation Shorthand",
@@ -325,6 +391,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Supra",
+        "glyph": "SUP",
+        "kind": "maxim",
         "pattern": r"\bSupra\b",
         "name": "Supra ('Above')",
         "category": "Judicial Cross-Reference",
@@ -332,6 +400,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Infra",
+        "glyph": "INF",
+        "kind": "maxim",
         "pattern": r"\bInfra\b",
         "name": "Infra ('Below')",
         "category": "Judicial Cross-Reference",
@@ -339,6 +409,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "In re",
+        "glyph": "IR",
+        "kind": "maxim",
         "pattern": r"\bIn\s+re\b",
         "name": "In re ('In the matter of')",
         "category": "Judicial Proceeding",
@@ -346,6 +418,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Ex parte",
+        "glyph": "EP",
+        "kind": "maxim",
         "pattern": r"\bEx\s+parte\b",
         "name": "Ex parte ('On behalf of one party')",
         "category": "Procedural Order",
@@ -353,6 +427,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Prima facie",
+        "glyph": "PF",
+        "kind": "maxim",
         "pattern": r"\bPrima\s+facie\b",
         "name": "Prima facie ('At first sight')",
         "category": "Evidentiary Standard",
@@ -360,6 +436,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Suo motu",
+        "glyph": "SM",
+        "kind": "maxim",
         "pattern": r"\bSuo\s+motu\b",
         "name": "Suo motu ('On its own motion')",
         "category": "Constitutional Jurisdiction",
@@ -367,6 +445,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Inter alia",
+        "glyph": "IA",
+        "kind": "maxim",
         "pattern": r"\bInter\s+alia\b",
         "name": "Inter alia ('Among other things')",
         "category": "Judicial Scrutiny",
@@ -374,6 +454,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Ultra vires",
+        "glyph": "UV",
+        "kind": "maxim",
         "pattern": r"\bUltra\s+vires\b",
         "name": "Ultra vires ('Beyond legal power')",
         "category": "Constitutional Doctrine",
@@ -381,6 +463,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Ratio decidendi",
+        "glyph": "RD",
+        "kind": "maxim",
         "pattern": r"\bRatio\s+decidendi\b",
         "name": "Ratio decidendi ('Reason for the decision')",
         "category": "Binding Precedent",
@@ -388,6 +472,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Obiter dicta",
+        "glyph": "OD",
+        "kind": "maxim",
         "pattern": r"\bObiter(?:\s+dicta)?\b",
         "name": "Obiter dicta ('Said by the way')",
         "category": "Persuasive Remark",
@@ -395,6 +481,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Per incuriam",
+        "glyph": "PI",
+        "kind": "maxim",
         "pattern": r"\bPer\s+incuriam\b",
         "name": "Per incuriam ('Through lack of care')",
         "category": "Precedent Doctrine",
@@ -402,6 +490,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Mutatis mutandis",
+        "glyph": "MM",
+        "kind": "maxim",
         "pattern": r"\bMutatis\s+mutandis\b",
         "name": "Mutatis mutandis ('With necessary changes')",
         "category": "Statutory Interpretation",
@@ -409,6 +499,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Coram",
+        "glyph": "CR",
+        "kind": "maxim",
         "pattern": r"\bCoram\b",
         "name": "Coram ('In the presence of')",
         "category": "Bench Constitution",
@@ -416,13 +508,44 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "Locus standi",
+        "glyph": "LS",
+        "kind": "maxim",
         "pattern": r"\bLocus\s+standi\b",
         "name": "Locus standi ('Right to bring action')",
         "category": "Procedural Standing",
         "meaning": "The legal capacity of a litigant to demonstrate sufficient harm or interest to maintain proceedings in court.",
     },
     {
+        "symbol": "Res judicata",
+        "glyph": "RJ",
+        "kind": "maxim",
+        "pattern": r"\bRes\s+judicata\b",
+        "name": "Res judicata ('A matter judged')",
+        "category": "Procedural Finality",
+        "meaning": "Bar against re-litigating a conclusive judicial decision between the same parties over the same cause of action.",
+    },
+    {
+        "symbol": "Stare decisis",
+        "glyph": "SD",
+        "kind": "maxim",
+        "pattern": r"\bStare\s+decisis\b",
+        "name": "Stare decisis ('To stand by things decided')",
+        "category": "Precedent Doctrine",
+        "meaning": "The legal doctrine of precedent obligating courts to follow established historical rulings in subsequent cases.",
+    },
+    {
+        "symbol": "Amicus curiae",
+        "glyph": "AC",
+        "kind": "maxim",
+        "pattern": r"\bAmicus(?:\s+curiae)?\b",
+        "name": "Amicus curiae ('Friend of the court')",
+        "category": "Bench Assistance",
+        "meaning": "An impartial legal expert appointed to assist the court on complex matters of law without representing either litigant.",
+    },
+    {
         "symbol": "Sub judice",
+        "glyph": "SJ",
+        "kind": "maxim",
         "pattern": r"\bSub\s+judice\b",
         "name": "Sub judice ('Under judicial consideration')",
         "category": "Contempt of Court",
@@ -430,6 +553,8 @@ LEGAL_SYMBOLS_REGISTRY = [
     },
     {
         "symbol": "CAV / Cur. adv. vult",
+        "glyph": "CAV",
+        "kind": "maxim",
         "pattern": r"\b(?:C\.A\.V\.|CAV|Cur\.\s*adv\.\s*vult)\b",
         "name": "Curia Advisari Vult ('Judgment Reserved')",
         "category": "Bench Procedure",
@@ -453,7 +578,7 @@ def extract_symbol_snippet(text: str, match: re.Match) -> str:
 
 def analyze_legal_symbols(text: str) -> list[dict]:
     """
-    Scans legal judgment text for special symbols (§, ¶, №), citation shorthand,
+    Scans legal judgment text for special symbols (§, ¶, №, ©, ®, ™), citation shorthand,
     and Latin legal maxims, returning their definitions, categories, counts,
     and context snippets.
     """
@@ -466,6 +591,8 @@ def analyze_legal_symbols(text: str) -> list[dict]:
             snippet = extract_symbol_snippet(text, first_match)
             detected.append({
                 "symbol": entry["symbol"],
+                "glyph": entry.get("glyph", entry["symbol"] if len(entry["symbol"]) <= 4 else entry["symbol"][:3].upper()),
+                "kind": entry.get("kind", "glyph" if len(entry["symbol"]) <= 4 else "maxim"),
                 "name": entry["name"],
                 "category": entry["category"],
                 "meaning": entry["meaning"],

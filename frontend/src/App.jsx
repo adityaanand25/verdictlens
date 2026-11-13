@@ -174,6 +174,31 @@ function calculateCompression(original, shortened) {
   return Math.max(0, Math.min(100, Math.round((1 - summaryCount / originalCount) * 100)));
 }
 
+function highlightSymbolSnippet(snippet, symbol) {
+  if (!snippet) return null;
+  if (!symbol) return snippet;
+  try {
+    const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    const parts = snippet.split(regex);
+    return parts.map((part, i) => {
+      if (part.toLowerCase() === symbol.toLowerCase()) {
+        return (
+          <mark
+            key={i}
+            className="rounded bg-amber-400/25 px-1 py-0.5 font-bold font-serif text-amber-200 border border-amber-400/40 not-italic select-all shadow-sm"
+          >
+            {part}
+          </mark>
+        );
+      }
+      return part;
+    });
+  } catch {
+    return snippet;
+  }
+}
+
 export default function App() {
   // Page state: 'intro' (landing / introduction) vs 'workspace' (upload & analysis)
   const [currentPage, setCurrentPage] = useState("intro");

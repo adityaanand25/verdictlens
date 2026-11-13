@@ -7,7 +7,9 @@ export default {
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
         display: ["Plus Jakarta Sans", "Inter", "sans-serif"],
-        mono: ["JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
+        mono: ["JetBrains Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Segoe UI Symbol", "monospace"],
+        serif: ["Cormorant Garamond", "Cinzel", "Cambria", "Georgia", "Times New Roman", "Segoe UI Symbol", "serif"],
+        legal: ["Cinzel", "Cormorant Garamond", "Cambria", "Times New Roman", "Segoe UI Symbol", "serif"],
       },
       colors: {
         brand: {
